@@ -76,10 +76,10 @@ void menu()
             printf("\n1) Si\n");
             printf("\n2) No\n");
             scanf("%i", &el);
-            // if (el == 1)
-            // {
-            //     imprimir_matriz(matriz, dim,dim);
-            // }
+            if (el == 1)
+            {
+                imprimir_matriz(matriz, dim,dim);
+            }
         default:
             printf("\nSeleccione una opcion Valida >:(");
             break;
@@ -154,10 +154,10 @@ long long **matriz_inversa(long long **matriz, int dim)
     printf("Fase 6");
     // M22 = -Mcombinada_inv
     M22 = Mcombinado_inv;
-    printf("Fase 6");
+    printf("Fase 7");
 
     matriz_resultado = recombinarMatriz(M11, M12, M21, M22, dim);
-    printf("Fase 7");
+    printf("Fase 8");
     return matriz_resultado;
 }
 
