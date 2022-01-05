@@ -38,15 +38,16 @@ long long InvP(long long A);
 int main()
 {
     srand(0);
-    long long **matriz, **a;
-    int largo;
-    largo = 4;
-    matriz = asignar_matriz(largo, largo);
-    a = asignar_matriz(largo, largo);
-    llenar_matriz(matriz, largo, largo);
-    imprimir_matriz(matriz, largo, largo);
-    a = matriz_inversa(matriz, largo);
-    imprimir_matriz(a, largo, largo);
+    menu();
+    // long long **matriz, **a;
+    // int largo;
+    // largo = 4;
+    // matriz = asignar_matriz(largo, largo);
+    // a = asignar_matriz(largo, largo);
+    // llenar_matriz(matriz, largo, largo);
+    // imprimir_matriz(matriz, largo, largo);
+    // a = matriz_inversa(matriz, largo);
+    // imprimir_matriz(a, largo, largo);
     return 0;
 }
 void menu()
@@ -64,22 +65,45 @@ void menu()
         printf("\n 1) Generar matriz nueva. ");
         printf("\n 2) Tiempo de Matriz Invertida. ");
         printf("\n 0) Salir. ");
+        scanf("%d",&op);
         switch (op)
         {
         case 1:
+            //No se como hacer este funcionar
+            // for (int i = 0; i < dim; i++)
+            // {
+            //     free(matriz[i]);
+            // }
+            free(matriz);
+            printf("\nEscoga la dimension de la nueva Matriz\n");
+
+            scanf("%d",&dim);
+            matriz = asignar_matriz(dim, dim);
+            llenar_matriz(matriz, dim, dim);
+            printf("\nMatriz creada exitosamente! ");
             break;
         case 2:
             tiempo1 = clock();
             matriz = matriz_inversa(matriz, dim);
             tiempo2 = clock();
+            printf("\nTiempo de ejecucion: %f\n", ((double)tiempo2 - (double)tiempo1) / ((double)CLOCKS_PER_SEC));
             printf("\nDesea ver las matrices?\n");
             printf("\n1) Si\n");
             printf("\n2) No\n");
             scanf("%i", &el);
             if (el == 1)
             {
-                imprimir_matriz(matriz, dim,dim);
+                imprimir_matriz(matriz, dim, dim);
             }
+            else if (el == 2)
+            {
+                break;
+            }
+            else
+                break;
+        case 0:
+            printf("\n Saliendo . . .");
+            break;
         default:
             printf("\nSeleccione una opcion Valida >:(");
             break;
@@ -163,9 +187,11 @@ long long **matriz_inversa(long long **matriz, int dim)
 
 long long **matriz_negativa(long long **matriz, int dim)
 {
-    for(int i = 0; i < dim; i++){
-        for(int j = 0; j < dim; j++){
-            matriz[i][j] = MultP(matriz[i][j],-1);
+    for (int i = 0; i < dim; i++)
+    {
+        for (int j = 0; j < dim; j++)
+        {
+            matriz[i][j] = MultP(matriz[i][j], -1);
         }
     }
     return matriz;
