@@ -29,7 +29,6 @@ long long **matriz_par(long long **matriz, int *dim);                           
 long long **matriz_inversa(long long **matriz, int dim);
 long long **matriz_negativa(long long **matriz, int dim);
 
-
 void resta_lineas(long long **matriz, int dim, int minu, int sustra, long long valor);
 void cambiar_linea(long long **matriz, int dim, int linea, long long valor);
 void Matriz_inversaG(long long **matriz, long long **identidad, int filas, int columnas);
@@ -43,9 +42,9 @@ long long InvP(long long A);
 
 int main()
 {
-    //srand(0);
+    srand(0);
     long long **matriz, **matriz1, **identidad;
-    int dim = 10;
+    int dim = 2;
 
     matriz = asignar_matriz(dim, dim);
     matriz1 = asignar_matriz(dim, dim);
@@ -55,27 +54,9 @@ int main()
     matriz1 = matriz;
     eye(identidad, dim, dim);
 
-    printf("\nMatriz: \n");
-    imprimir_matriz(matriz, dim, dim);
-    // imprimir_matriz(matriz1,dim,dim);
-
     matriz = matriz_inversa(matriz, dim);
-    // Matriz_inversaG(matriz1,identidad,dim,dim);
-    matriz1 = matriz_negativa(matriz,dim);
-    // printf("\nMatriz negativa: \n");
-    // imprimir_matriz(matriz,dim,dim);
-    imprimir_matriz(matriz, dim, dim);
-    // imprimir_matriz(matriz1,dim, dim);
-    // menu();
-    // long long **matriz, **a;
-    // int largo;
-    // largo = 4;
-    // matriz = asignar_matriz(largo, largo);
-    // a = asignar_matriz(largo, largo);
-    // llenar_matriz(matriz, largo, largo);
-    // imprimir_matriz(matriz, largo, largo);
-    // a = matriz_inversa(matriz, largo);
-    // imprimir_matriz(a, largo, largo);
+ 
+    printf("\nlistoco");
     return 0;
 }
 void menu()
@@ -176,7 +157,7 @@ long long **asignar_matriz(int n, int m)
 long long **matriz_inversa(long long **matriz, int dim)
 {
     long long **M11, **M12, **M21, **M22, **M11_inv, **Mcombinado_inv, **matriz_resultado;
-    int largo,ajuste;
+    int largo, ajuste;
 
     if (dim <= 1)
     {
@@ -191,13 +172,11 @@ long long **matriz_inversa(long long **matriz, int dim)
         **matriz_resultado = InvP(matriz[0][0]);
         return matriz_resultado;
     }
-
-    // comprobar que la matriz sea par
-    // matriz = matriz_par(matriz, &dim);
     largo = dim / 2;
     ajuste = largo;
-    
-    if(dim %2 !=0 ){
+
+    if (dim % 2 != 0)
+    {
         ajuste = ajuste + 1;
     }
     M11 = asignar_matriz(ajuste, ajuste);
@@ -205,99 +184,58 @@ long long **matriz_inversa(long long **matriz, int dim)
     M21 = asignar_matriz(ajuste, ajuste);
     M22 = asignar_matriz(ajuste, ajuste);
 
-    llenar_submatriz(M11, matriz, 0, 0, ajuste, ajuste);             // Traspasa los valores del primer cuadrante a M11
-    llenar_submatriz(M12, matriz, 0, ajuste, ajuste, largo);       // Traspasa los valores del segundo cuadrante a M12
-    llenar_submatriz(M21, matriz, ajuste,0, largo, ajuste);       // Traspasa los valores del tercer cuadrante a M21
+    llenar_submatriz(M11, matriz, 0, 0, ajuste, ajuste);         // Traspasa los valores del primer cuadrante a M11
+    llenar_submatriz(M12, matriz, 0, ajuste, ajuste, largo);     // Traspasa los valores del segundo cuadrante a M12
+    llenar_submatriz(M21, matriz, ajuste, 0, largo, ajuste);     // Traspasa los valores del tercer cuadrante a M21
     llenar_submatriz(M22, matriz, ajuste, ajuste, largo, largo); // Traspasa los valores del cuarto cuadrante a M22
 
-    if (matriz_inversa(M11, largo)[0][0] == 0)
+
+    M11_inv = asignar_matriz(largo, largo);
+    Mcombinado_inv = asignar_matriz(largo, largo);
+
+    M11_inv = matriz_inversa(M11, ajuste);
+
+    if (M11_inv[0][0] == 0)
     {
         printf("\nNo hay mano....\n");
         exit(1);
     }
 
-    // printf("Fase 0");
-    M11_inv = asignar_matriz(largo, largo);
-    Mcombinado_inv = asignar_matriz(largo, largo);
+    Mcombinado_inv = Mult_Strassen(M21, M11_inv, ajuste);
+    Mcombinado_inv = Mult_Strassen(Mcombinado_inv, M12, ajuste);
+    Mcombinado_inv = restaMatrices(M22, Mcombinado_inv, ajuste, ajuste);
 
-   
-
-    // m11 = a11*
-    // m11 = matriz_inversa(m11)
-    //  m11 =suma_matrices(m11, mult_starssen(m11)
-    //  printf(" \nFase 1 ");
-    M11_inv = matriz_inversa(M11, ajuste);
-
-    // printf("\n\nM11_inv:  \n");
-    // imprimir_matriz(M11_inv,largo,largo);
-
-
-    // // dim = 3, largo = 1 ; ajuste = 2
-    // printf("\n\nm11:  \n");
-    // M11 = matriz_cuadrada(M11,ajuste,ajuste,largo);
-    // imprimir_matriz(M11_inv,largo,largo);
-    // printf("\n\nm12:  \n");
-    // M12 = matriz_cuadrada(M12,ajuste,largo,largo);
-    // imprimir_matriz(M11_inv,largo,largo);
-    // printf("\n\nm21:  \n");
-    // M21 = matriz_cuadrada(M21,largo,ajuste,largo);
-    // imprimir_matriz(M11_inv,largo,largo);
-    // printf("\n\nm22:  \n");
-    // M22 = matriz_cuadrada(M22,largo,largo,largo);
-    // imprimir_matriz(M11_inv,largo,largo);
-    
-    // printf("\nMATRICES SUBIDIVIDIAS :     \n");
-    // imprimir_matriz(M11, ajuste,ajuste);
-    // imprimir_matriz(M12, ajuste,ajuste);
-    // imprimir_matriz(M21, ajuste,ajuste);
-    // imprimir_matriz(M22, ajuste,ajuste);
-    // printf("\nFIN DE MATRICES SUBIDIVIDIAS :     \n");
-                          
-    Mcombinado_inv = restaMatrices(M22, Mult_Strassen(Mult_Strassen(M21, M11_inv, ajuste), M12, ajuste), ajuste, ajuste);
-    if(ajuste == 2){
-        Mcombinado_inv[0][0] = InvP(Mcombinado_inv[0][0]); 
-    }else{
-        Mcombinado_inv = matriz_inversa(restaMatrices(M22, Mult_Strassen(Mult_Strassen(M21, M11_inv, ajuste), M12, ajuste), ajuste, ajuste),ajuste);
-
+    if (ajuste == 2 && Mcombinado_inv[1][0] == 0 && Mcombinado_inv[0][1] == 0 && Mcombinado_inv[1][1] == 0)
+    {
+        Mcombinado_inv[0][0] = InvP(Mcombinado_inv[0][0]);
     }
-    
-    
-    printf("\n\nMatriz combinada invertida: \n");
-    imprimir_matriz(Mcombinado_inv,ajuste,ajuste);
-    
-    //  printf(" \nFase 2 ");
-    // imprimir_matriz(Mcombinado_inv,largo,largo);
-    // M11 = M11_inv + (M11_inv * M12) * Mcombinado * M21*M11_inv
-    //M11 = Mult_Strassen(Mult_Strassen(Mult_Strassen(sumaMatrices(M11_inv, Mult_Strassen(M11_inv, M12, ajuste), ajuste, ajuste), Mcombinado_inv, ajuste), M21, ajuste), M11_inv, ajuste);
-    M11 = Mult_Strassen(M11_inv,M12,ajuste);
-    M11 = Mult_Strassen(M11,Mcombinado_inv,ajuste);
-    M11 = Mult_Strassen(M11,M21,ajuste);
-    M11 = Mult_Strassen(M11,M11_inv,ajuste);
-    M11 = sumaMatrices(M11_inv,M11,ajuste,ajuste);
-    // printf(" \nFase 3 ");
-    // M12 = -A11_inv*A12 * Mcombinado_inv
-    M12 = Mult_Strassen(Mult_Strassen(matriz_negativa(M11_inv, ajuste), M12, ajuste), Mcombinado_inv, ajuste);
-    //  printf(" \nFase 4 ");
-    // M21 = -Mcombinada_inv * M21 * M11_inv
-    //  printf(" \nFase 5 ");
-    //M21 = multiplicacion_clasica(Mult_Strassen(matriz_negativa(Mcombinado_inv,ajuste), M21, ajuste), M11_inv, ajuste);
-    M21 = Mult_Strassen(matriz_negativa(Mcombinado_inv,ajuste),M21,ajuste);
-    M21 = Mult_Strassen(M21,M11_inv,ajuste);
+    else
+    {
+        Mcombinado_inv = matriz_inversa(Mcombinado_inv, ajuste);
+    }
 
-    // printf(" \nFase 6 ");
-    // M22 = -Mcombinada_inv
+    M11 = Mult_Strassen(M11_inv, M12, ajuste);
+    M11 = Mult_Strassen(M11, Mcombinado_inv, ajuste);
+    M11 = Mult_Strassen(M11, M21, ajuste);
+    M11 = Mult_Strassen(M11, M11_inv, ajuste);
+    M11 = sumaMatrices(M11_inv, M11, ajuste, ajuste);
+
+    M12 = Mult_Strassen(Mult_Strassen(matriz_negativa(M11_inv, ajuste), M12, ajuste), Mcombinado_inv, ajuste);
+
+    M21 = Mult_Strassen(matriz_negativa(Mcombinado_inv, ajuste), M21, ajuste);
+    M21 = Mult_Strassen(M21, M11_inv, ajuste);
+
     M22 = Mcombinado_inv;
-    //  printf(" \nFase 7 ");
 
     matriz_resultado = recombinarMatriz(M11, M12, M21, M22, ajuste * 2);
-    //  printf(" \nFase 8 ");
+
     return matriz_resultado;
 }
 
 long long **matriz_negativa(long long **matriz, int dim)
 {
     long long **matriz_resultado;
-    matriz_resultado = asignar_matriz(dim,dim);
+    matriz_resultado = asignar_matriz(dim, dim);
     for (int i = 0; i < dim; i++)
     {
         for (int j = 0; j < dim; j++)
@@ -402,7 +340,7 @@ void llenar_matriz(long long **matriz, int filas, int columnas)
     {
         for (int j = 0; j < columnas; j++)
         {
-            matriz[i][j] =((long long)(rand() % P)); // Se asignan valores aleatorios a cada coordenadas de la matriz
+            matriz[i][j] = ((long long)(rand() % P)); // Se asignan valores aleatorios a cada coordenadas de la matriz
         }
     }
 }
