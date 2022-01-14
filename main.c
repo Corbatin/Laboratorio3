@@ -28,6 +28,7 @@ long long **recombinarMatriz(long long **C11, long long **C12, long long **C21, 
 long long **matriz_par(long long **matriz, int *dim);                                                      // Funcion que aumenta a un numero par las dimensiones de una matriz de orden impar
 long long **matriz_inversa(long long **matriz, int dim);
 long long **matriz_negativa(long long **matriz, int dim);
+long long **matriz_cuadrada(long long **matriz, int *dim);
 
 void resta_lineas(long long **matriz, int dim, int minu, int sustra, long long valor);
 void cambiar_linea(long long **matriz, int dim, int linea, long long valor);
@@ -43,20 +44,8 @@ long long InvP(long long A);
 int main()
 {
     srand(0);
-    long long **matriz, **matriz1, **identidad;
-    int dim = 2;
-
-    matriz = asignar_matriz(dim, dim);
-    matriz1 = asignar_matriz(dim, dim);
-    identidad = asignar_matriz(dim, dim);
-
-    llenar_matriz(matriz, dim, dim);
-    matriz1 = matriz;
-    eye(identidad, dim, dim);
-
-    matriz = matriz_inversa(matriz, dim);
- 
-    printf("\nlistoco");
+    
+    menu();
     return 0;
 }
 void menu()
@@ -70,7 +59,7 @@ void menu()
 
     matriz = asignar_matriz(dim, dim);
     llenar_matriz(matriz, dim, dim);
-    imprimir_matriz(matriz, dim, dim);
+    // imprimir_matriz(matriz, dim, dim);
     do
     {
         printf("\nQue desea ver?");
@@ -126,11 +115,12 @@ void menu()
             }
             else
                 break;
+            break;
         case 0:
             printf("\n Saliendo . . .");
             break;
         default:
-            printf("\nSeleccione una opcion Valida >:(");
+            printf("\nSeleccione una opcion Valida. ");
             break;
         }
     } while (op);
@@ -145,10 +135,10 @@ long long **asignar_matriz(int n, int m)
 {
     int i, j;
     long long **array;
-    array = (long long **)calloc(n, sizeof(long long *)); // se reserva memoria  para la matriz de x filas que contiene direcciones de memoria a las segundas dimensiones.
+    array = (long long **)malloc(n* sizeof(long long *)); // se reserva memoria  para la matriz de x filas que contiene direcciones de memoria a las segundas dimensiones.
     for (i = 0; i < n; i++)
     {
-        array[i] = (long long *)calloc(m, sizeof(long long)); // se reserva memoria para las segundas dimensiones , x columnas
+        array[i] = (long long *)malloc(m * sizeof(long long)); // se reserva memoria para las segundas dimensiones , x columnas
     }
     // en memoria ya tenemos reservado espacio para una matriz de x por x --> array[x][x]
     return &*array; // retorno de un puntero doble
@@ -172,27 +162,27 @@ long long **matriz_inversa(long long **matriz, int dim)
         **matriz_resultado = InvP(matriz[0][0]);
         return matriz_resultado;
     }
-    largo = dim / 2;
-    ajuste = largo;
+    matriz = matriz_cuadrada(matriz, &dim);
+    ajuste = dim/2;
 
-    if (dim % 2 != 0)
-    {
-        ajuste = ajuste + 1;
-    }
     M11 = asignar_matriz(ajuste, ajuste);
     M12 = asignar_matriz(ajuste, ajuste);
     M21 = asignar_matriz(ajuste, ajuste);
     M22 = asignar_matriz(ajuste, ajuste);
 
-    llenar_submatriz(M11, matriz, 0, 0, ajuste, ajuste);         // Traspasa los valores del primer cuadrante a M11
-    llenar_submatriz(M12, matriz, 0, ajuste, ajuste, largo);     // Traspasa los valores del segundo cuadrante a M12
-    llenar_submatriz(M21, matriz, ajuste, 0, largo, ajuste);     // Traspasa los valores del tercer cuadrante a M21
-    llenar_submatriz(M22, matriz, ajuste, ajuste, largo, largo); // Traspasa los valores del cuarto cuadrante a M22
+    for (int i = 0; i < ajuste; i++)
+    {
+        for (int j = 0; j < ajuste; j++)
+        {
+            M11[i][j] = matriz[i][j];
+            M12[i][j] = matriz[i][j + ajuste];
+            M21[i][j] = matriz[i + ajuste][j];
+            M22[i][j] = matriz[i + ajuste][j + ajuste];
+        }
+    }
 
-
-    M11_inv = asignar_matriz(largo, largo);
-    Mcombinado_inv = asignar_matriz(largo, largo);
-
+    M11_inv = asignar_matriz(ajuste, ajuste);
+    Mcombinado_inv = asignar_matriz(ajuste, ajuste);
     M11_inv = matriz_inversa(M11, ajuste);
 
     if (M11_inv[0][0] == 0)
@@ -228,7 +218,22 @@ long long **matriz_inversa(long long **matriz, int dim)
     M22 = Mcombinado_inv;
 
     matriz_resultado = recombinarMatriz(M11, M12, M21, M22, ajuste * 2);
-
+    for (int i = 0; i < ajuste; i++)
+    {
+        free(M11[i]);
+        free(M12[i]);
+        free(M21[i]);
+        free(M22[i]);
+        free(M11_inv[i]);
+        free(Mcombinado_inv[i]);
+    }
+    free(M11);
+    free(M12);
+    free(M21);
+    free(M22);
+    free(M11_inv);
+    free(Mcombinado_inv);
+    
     return matriz_resultado;
 }
 
@@ -471,6 +476,24 @@ long long **matriz_par(long long **matriz, int *dim)
         return matriz; // Devuelve la matriz orginal
 }
 
+long long **matriz_cuadrada(long long **matriz, int *dim)
+{
+    long long **matriz_par;
+    int Dim = *dim;
+    if (Dim % 2 != 0) // Comprueba si la matriz tiene dimension par
+    {
+        matriz_par = asignar_matriz(Dim + 1, Dim + 1);        // Asigna la memoria para dejar la matriz con dimension par
+        llenar_submatriz(matriz_par, matriz, 0, 0, Dim, Dim); // Rellena la matriz nueva con los valores de la original
+        matriz_par[Dim][Dim]= 1;
+        Dim++;
+        *dim = Dim;        // Actualiza la dimension de la matriz
+        return matriz_par; // Devuelve la matriz con la dimension par
+    }
+    else
+        return matriz; // Devuelve la matriz orginal
+    
+}
+
 long long MultP(long long a, long long b)
 {
     long long a0, a1, b0, b1, d0, d1, d2, d3;
@@ -605,96 +628,3 @@ long long InvP(long long A)
     return (s1);
 }
 
-void Matriz_inversaG(long long **matriz, long long **identidad, int filas, int columnas)
-{
-
-    long long aux, inv;
-    if (matriz == NULL || identidad == NULL)
-    {
-        printf("\nMemoria alocada incorrectamnete......");
-        exit(0);
-    }
-    else
-    {
-        for (int i = 0; i < columnas; i++)
-        {
-
-            for (int j = i; j < filas - 1; j++)
-            {
-
-                inv = InvP(matriz[i][i]);
-                cambiar_linea(matriz, columnas, i, inv);
-                cambiar_linea(identidad, columnas, i, inv); // Se repiten las mismas operaciones para la matriz identidad
-                resta_lineas(identidad, columnas, j + 1, i, matriz[j + 1][i]);
-                resta_lineas(matriz, columnas, j + 1, i, matriz[j + 1][i]); // Se siguen repitiendo las operaciones
-            }
-        }
-
-        for (int i = columnas - 1; i > 0; i--)
-        {
-            for (int j = i; j > 0; j--)
-            {
-
-                inv = InvP(matriz[i][i]);
-                cambiar_linea(matriz, columnas, i, inv);
-                cambiar_linea(identidad, columnas, i, inv);
-                resta_lineas(identidad, columnas, j - 1, i, matriz[j - 1][i]);
-                resta_lineas(matriz, columnas, j - 1, i, matriz[j - 1][i]);
-            }
-        }
-    }
-}
-
-void eye(long long **matriz, int fila, int columnas)
-{
-    for (int i = 0; i < fila; i++)
-    {
-        matriz[i][i] = 1;
-    }
-}
-
-void cambiar_linea(long long **matriz, int dim, int linea, long long valor)
-{
-    for (int i = 0; i < dim; i++)
-    {
-        matriz[linea][i] = MultP(matriz[linea][i], valor); // se aplifica la linea por la variable valor
-    }
-}
-
-void resta_lineas(long long **matriz, int dim, int minu, int sustra, long long valor)
-{
-    long long aux; // variable auxiliar que guarda la linea que se va a restar
-
-    for (int i = 0; i < dim; i++)
-    {
-        aux = MultP(matriz[sustra][i], valor);
-        matriz[minu][i] = RestaP(matriz[minu][i], aux);
-    }
-}
-
-// long long **matriz_cuadrada(long long **matriz, int filas, int columnas, int largo)
-// {
-//     long long **matriz_rs;
-//     if (filas > columnas)
-//     { // m12
-//         matriz_rs = asignar_matriz(filas, filas);
-//         llenar_submatriz(matriz_rs, matriz, 0, 0, filas, filas);
-//         return matriz_rs;
-//     }
-//     else if (filas < columnas)
-//     { // m21
-//         matriz_rs = asignar_matriz(columnas, columnas);
-//         llenar_submatriz(matriz_rs, matriz, 0, 0, columnas, columnas);
-//         return matriz_rs;
-//     }
-//     else if (filas == largo && columnas == largo)
-//     { // m22
-//         matriz_rs = asignar_matriz(largo + 1, largo + 1);
-//         llenar_submatriz(matriz_rs,matriz,0,0,largo + 1,largo + 1);
-//         return matriz_rs;
-//     }
-//     else
-//     { // m11
-//         return matriz;
-//     }
-// }
