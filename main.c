@@ -2,7 +2,7 @@
 // Nombre Profesora: Nicolas Thériault
 // IDE: Visual Studio Code 1.62.3
 // SO: Windows 10
-// Fecha: [REDACTED] de [REDACTED] - 2021
+// Fecha: [REDACTED] de [REDACTED] - 2022
 // Este programa [REDACTED]
 
 #include <stdio.h>
@@ -43,8 +43,9 @@ long long InvP(long long A);
 
 int main()
 {
-    srand(0);
-    
+    // srand(0);
+    long long **matriz, matriz_invG;
+
     menu();
     return 0;
 }
@@ -135,10 +136,20 @@ long long **asignar_matriz(int n, int m)
 {
     int i, j;
     long long **array;
-    array = (long long **)malloc(n* sizeof(long long *)); // se reserva memoria  para la matriz de x filas que contiene direcciones de memoria a las segundas dimensiones.
+    array = (long long **)calloc(n, sizeof(long long *)); // se reserva memoria  para la matriz de x filas que contiene direcciones de memoria a las segundas dimensiones.
+    if (array == NULL)
+    {
+        printf("\nMemoria alocada incorrectamente....\n");
+        exit(0);
+    }
     for (i = 0; i < n; i++)
     {
-        array[i] = (long long *)malloc(m * sizeof(long long)); // se reserva memoria para las segundas dimensiones , x columnas
+        array[i] = (long long *)calloc(m, sizeof(long long)); // se reserva memoria para las segundas dimensiones , x columnas
+    }
+    if (array == NULL)
+    {
+        printf("\nMemoria alocada incorrectamente....\n");
+        exit(0);
     }
     // en memoria ya tenemos reservado espacio para una matriz de x por x --> array[x][x]
     return &*array; // retorno de un puntero doble
@@ -148,7 +159,11 @@ long long **matriz_inversa(long long **matriz, int dim)
 {
     long long **M11, **M12, **M21, **M22, **M11_inv, **Mcombinado_inv, **matriz_resultado;
     int largo, ajuste;
-
+    if (matriz == NULL)
+    {
+        printf("Memoria alocada como las weas.");
+        exit(0);
+    }
     if (dim <= 1)
     {
         matriz_resultado = asignar_matriz(1, 1);
@@ -162,8 +177,9 @@ long long **matriz_inversa(long long **matriz, int dim)
         **matriz_resultado = InvP(matriz[0][0]);
         return matriz_resultado;
     }
+    // printf(" a ver %i", &dim);
     matriz = matriz_cuadrada(matriz, &dim);
-    ajuste = dim/2;
+    ajuste = dim / 2;
 
     M11 = asignar_matriz(ajuste, ajuste);
     M12 = asignar_matriz(ajuste, ajuste);
@@ -185,7 +201,7 @@ long long **matriz_inversa(long long **matriz, int dim)
     Mcombinado_inv = asignar_matriz(ajuste, ajuste);
     M11_inv = matriz_inversa(M11, ajuste);
 
-    if (M11_inv[0][0] == 0)
+    if (M11_inv[0][0] == 0 && ajuste > 1)
     {
         printf("\nNo hay mano....\n");
         exit(1);
@@ -195,15 +211,7 @@ long long **matriz_inversa(long long **matriz, int dim)
     Mcombinado_inv = Mult_Strassen(Mcombinado_inv, M12, ajuste);
     Mcombinado_inv = restaMatrices(M22, Mcombinado_inv, ajuste, ajuste);
 
-    if (ajuste == 2 && Mcombinado_inv[1][0] == 0 && Mcombinado_inv[0][1] == 0 && Mcombinado_inv[1][1] == 0)
-    {
-        Mcombinado_inv[0][0] = InvP(Mcombinado_inv[0][0]);
-    }
-    else
-    {
-        Mcombinado_inv = matriz_inversa(Mcombinado_inv, ajuste);
-    }
-
+    Mcombinado_inv = matriz_inversa(Mcombinado_inv, ajuste);
     M11 = Mult_Strassen(M11_inv, M12, ajuste);
     M11 = Mult_Strassen(M11, Mcombinado_inv, ajuste);
     M11 = Mult_Strassen(M11, M21, ajuste);
@@ -217,23 +225,8 @@ long long **matriz_inversa(long long **matriz, int dim)
 
     M22 = Mcombinado_inv;
 
-    matriz_resultado = recombinarMatriz(M11, M12, M21, M22, ajuste * 2);
-    for (int i = 0; i < ajuste; i++)
-    {
-        free(M11[i]);
-        free(M12[i]);
-        free(M21[i]);
-        free(M22[i]);
-        free(M11_inv[i]);
-        free(Mcombinado_inv[i]);
-    }
-    free(M11);
-    free(M12);
-    free(M21);
-    free(M22);
-    free(M11_inv);
-    free(Mcombinado_inv);
-    
+    matriz_resultado = recombinarMatriz(M11, M12, M21, M22, dim);
+
     return matriz_resultado;
 }
 
@@ -484,14 +477,13 @@ long long **matriz_cuadrada(long long **matriz, int *dim)
     {
         matriz_par = asignar_matriz(Dim + 1, Dim + 1);        // Asigna la memoria para dejar la matriz con dimension par
         llenar_submatriz(matriz_par, matriz, 0, 0, Dim, Dim); // Rellena la matriz nueva con los valores de la original
-        matriz_par[Dim][Dim]= 1;
+        matriz_par[Dim][Dim] = 1;
         Dim++;
         *dim = Dim;        // Actualiza la dimension de la matriz
         return matriz_par; // Devuelve la matriz con la dimension par
     }
     else
         return matriz; // Devuelve la matriz orginal
-    
 }
 
 long long MultP(long long a, long long b)
@@ -627,4 +619,3 @@ long long InvP(long long A)
     }
     return (s1);
 }
-
