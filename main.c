@@ -38,19 +38,20 @@ long long InvP(long long A);
 
 int main()
 {
-    // srand(0);
+    srand(0);
     menu();
     return 0;
 }
 void menu()
 {
-    int op, dim, el;
+    int op, dim = 0, el;
     long long **matriz;
     clock_t tiempo1, tiempo2;
 
     matriz = NULL;
     do
     {
+        printf("\nDIMENSION : %i", dim);
         printf("\nQue desea ver?");
         printf("\n 1) Generar matriz nueva. ");
         printf("\n 2) Tiempo de Matriz Invertida. ");
@@ -64,19 +65,18 @@ void menu()
 
                 for (int i = 0; i < dim; i++)
                 {
-                    printf("\nyea yea %i \n", i);
+                    
                     free(matriz[i]);
                 }
                 free(matriz);
-                matriz = NULL;
-                }
+                printf("\nMemoria liberada! \n");
+            }
             printf("\nEscoga la dimension de la nueva Matriz\n");
 
             scanf("%d", &dim);
-            
-            if (dim <= 864)
+
+            if (dim < 1000)
             {
-            
 
                 matriz = asignar_matriz(dim, dim);
                 llenar_matriz(matriz, dim, dim);
@@ -144,7 +144,7 @@ long long **asignar_matriz(int n, int m)
     array = (long long **)calloc(n, sizeof(long long *)); // se reserva memoria  para la matriz de x filas que contiene direcciones de memoria a las segundas dimensiones.
     if (array == NULL)
     {
-        printf("\nMemoria alocada incorrectamente 1....\n");
+        printf("\nMemoria alocada incorrectamente ....\n");
         exit(0);
     }
     for (i = 0; i < n; i++)
@@ -153,11 +153,11 @@ long long **asignar_matriz(int n, int m)
     }
     if (array == NULL)
     {
-        printf("\nMemoria alocada incorrectamente 2....\n");
+        printf("\nMemoria alocada incorrectamente ....\n");
         exit(0);
     }
     // en memoria ya tenemos reservado espacio para una matriz de x por x --> array[x][x]
-    return &*array; // retorno de un puntero doble
+    return array; // retorno de un puntero doble
 }
 
 long long **matriz_inversa(long long **matriz, int dim)
@@ -167,8 +167,8 @@ long long **matriz_inversa(long long **matriz, int dim)
 
     if (matriz == NULL)
     {
-        printf("Memoria alocada de manera incorrecta 3.");
-        exit(0);
+        printf("\nLa matriz no existe.\n");
+        return 0;
     }
 
     if (dim <= 1)
@@ -176,7 +176,7 @@ long long **matriz_inversa(long long **matriz, int dim)
         matriz_resultado = asignar_matriz(1, 1);
         if (matriz[0][0] == 0)
         {
-            printf("Esta matriz no se puede invertir");
+            printf("Esta matriz no se puede invertir.");
             matriz_resultado[0][0] = 0;
             return matriz_resultado;
         }
@@ -208,20 +208,20 @@ long long **matriz_inversa(long long **matriz, int dim)
 
     if (M11_inv[0][0] == 0 && ajuste > 1)
     {
-        printf("\nNo hay mano....\n");
+        printf("\nLa matriz no es invertible. \n");
         exit(1);
     }
     // Obtiene el inverso de M22 -M21*M11^(-1)*M12
     Mcombinado_inv = Mult_Strassen(M21, M11_inv, ajuste);
     Mcombinado_inv = Mult_Strassen(Mcombinado_inv, M12, ajuste);
-    Mcombinado_inv = restaMatrices(M22, Mcombinado_inv, ajuste, ajuste); //here 
+    Mcombinado_inv = restaMatrices(M22, Mcombinado_inv, ajuste, ajuste);
     Mcombinado_inv = matriz_inversa(Mcombinado_inv, ajuste);
     // Operaciones del algoritmo para obtener cada uno de las submatrices
     M11 = Mult_Strassen(M11_inv, M12, ajuste);
     M11 = Mult_Strassen(M11, Mcombinado_inv, ajuste);
     M11 = Mult_Strassen(M11, M21, ajuste);
     M11 = Mult_Strassen(M11, M11_inv, ajuste);
-    M11 = sumaMatrices(M11_inv, M11, ajuste, ajuste);  //here
+    M11 = sumaMatrices(M11_inv, M11, ajuste, ajuste);
 
     M12 = Mult_Strassen(Mult_Strassen(matriz_negativa(M11_inv, ajuste), M12, ajuste), Mcombinado_inv, ajuste);
 
@@ -231,7 +231,19 @@ long long **matriz_inversa(long long **matriz, int dim)
     M22 = Mcombinado_inv;
     // Recombina las submatrices en la matriz mayor
     matriz = recombinarMatriz(matriz, M11, M12, M21, M22, dim);
-
+    for (int i = 0; i < ajuste; i++)
+    {
+        free(M11[i]);
+        free(M12[i]);
+        free(M21[i]);
+        free(M22[i]);
+        free(M11_inv[i]);
+    }
+    free(M11);
+    free(M12);
+    free(M21);
+    free(M22);
+    free(M11_inv);
     return matriz;
 }
 
@@ -334,6 +346,57 @@ long long **Mult_Strassen(long long **matriz_1, long long **matriz_2, int dim)
 
     // Recombinacion de matrices en la matriz resultado
     matriz_1 = recombinarMatriz(matriz_1, C11, C12, C21, C22, dim);
+    for (int i = 0; i < largo; i++)
+    {
+        free(matriz_a11[i]);
+        free(matriz_a12[i]);
+        free(matriz_a21[i]);
+        free(matriz_a22[i]);
+        free(matriz_b11[i]);
+        free(matriz_b12[i]);
+        free(matriz_b21[i]);
+        free(matriz_b22[i]);
+        free(S1[i]);
+        free(S2[i]);
+        free(S3[i]);
+        free(S4[i]);
+        free(S5[i]);
+        free(T1[i]);
+        free(T2[i]);
+        free(T3[i]);
+        free(T4[i]);
+        free(T5[i]);
+        free(aux[i]);
+        free(aux2[i]);
+        free(C11[i]);
+        free(C12[i]);
+        free(C21[i]);
+        free(C22[i]);
+    }
+    free(matriz_a11);
+    free(matriz_a12);
+    free(matriz_a21);
+    free(matriz_a22);
+    free(matriz_b11);
+    free(matriz_b12);
+    free(matriz_b21);
+    free(matriz_b22);
+    free(S1);
+    free(S2);
+    free(S3);
+    free(S4);
+    free(S4);
+    free(T1);
+    free(T2);
+    free(T3);
+    free(T4);
+    free(T5);
+    free(aux);
+    free(aux2);
+    free(C11);
+    free(C12);
+    free(C21);
+    free(C22);
     return matriz_1;
 }
 
@@ -424,10 +487,8 @@ long long **restaMatrices(long long **matriz1, long long **matriz2, int filas, i
 
 long long **recombinarMatriz(long long **matriz, long long **C11, long long **C12, long long **C21, long long **C22, int dim)
 {
-    // long long **matrizResultado;
     int val;
     val = dim / 2;
-    // matrizResultado = asignar_matriz(dim, dim);
     for (int i = 0; i < dim; i++)
     {
         for (int j = 0; j < dim; j++)
